@@ -300,21 +300,7 @@ export class CallApp {
 
     this.UI_ParameterToUi();
     this.UI_UiToValues();
-
-    //if autostart is set but no address is given -> create one and reopen the page
-    if (this.mAddress === null && this.mAutostart == true) {
-      this.mAddress = this.GenerateRandomKey();
-      window.location.href = this.GetUrlParams();
-    } else {
-      if (this.mAddress === null) this.mAddress = this.GenerateRandomKey();
-      this.Ui_ValuesToUi();
-    }
-
-    //used for interacting with the Unity CallApp
-
-    //current hack to get the html element delivered. by default this
-    //just the image is copied and given as array
-    //Lazy frames will be the default soon though
+    this.Ui_ValuesToUi();
 
     if (this.mAutostart) {
       console.log("Starting automatically ... ");
@@ -338,8 +324,6 @@ export class CallApp {
 
     this.UI_UpdateVideoDevices();
   }
-  private Ui_OnLog(msg: string) {}
-  private Ui_OnError(msg: string) {}
 
   private Ui_OnRemoteVideo(video: HTMLVideoElement, id: awrtc.ConnectionId) {
     if (id.id in this.mRemoteVideo) {
@@ -416,13 +400,6 @@ export class CallApp {
     this.UI_UiToValues();
   };
 
-  private UI_ParseRes(element: HTMLInputElement) {
-    if (element) {
-      const val = Math.floor(element.value as any);
-      if (val > 0) return val;
-    }
-    return -1;
-  }
   private UI_UiToValues() {
     const newConfig = this.mMediaConfig.clone();
 
@@ -430,16 +407,12 @@ export class CallApp {
     newConfig.Video = this.mUiVideo.checked;
 
     this.Reconfigure(newConfig);
-
-    this.mUiUrl.innerHTML = this.ValuesToParameter();
   }
   //Values to UI
   public Ui_ValuesToUi(): void {
     console.log("UpdateUi");
     this.mUiAudio.checked = this.mMediaConfig.Audio;
     this.mUiVideo.checked = this.mMediaConfig.Video;
-
-    this.mUiUrl.innerHTML = this.ValuesToParameter();
   }
 
   private GenerateRandomKey() {
@@ -448,28 +421,6 @@ export class CallApp {
       result += String.fromCharCode(65 + Math.round(Math.random() * 25));
     }
     return result;
-  }
-  private GetUrlParams() {
-    return (
-      "?a=" +
-      this.mAddress +
-      "&audio=" +
-      this.mMediaConfig.Audio +
-      "&video=" +
-      this.mMediaConfig.Video +
-      "&" +
-      "autostart=" +
-      false
-    );
-  }
-  private ValuesToParameter() {
-    return (
-      location.protocol +
-      "//" +
-      location.host +
-      location.pathname +
-      this.GetUrlParams()
-    );
   }
 }
 
