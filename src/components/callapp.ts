@@ -98,8 +98,6 @@ export class CallApp {
     const config = this.mMediaConfig;
     config.IdealFps = 30;
 
-    this.mMediaConfig.VideoDeviceName = this.UI_GetVideoDevice();
-
     //For usage in HTML set FrameUpdates to false and wait for  MediaUpdate to
     //get the VideoElement. By default awrtc would deliver frames individually
     //for use in Unity WebGL
@@ -260,7 +258,6 @@ export class CallApp {
   private mAutostart;
   private mUiAudio: HTMLInputElement;
   private mUiVideo: HTMLInputElement;
-  private mUiVideoDevices: HTMLSelectElement;
   private mUiButton: HTMLButtonElement;
   private mUiRemoteVideoParent: HTMLElement;
 
@@ -277,9 +274,6 @@ export class CallApp {
     this.mUiVideo = parent.querySelector<HTMLInputElement>(
       ".callapp_send_video"
     );
-    this.mUiVideoDevices =
-      parent.querySelector<HTMLSelectElement>(".video_devices");
-    this.UI_UpdateVideoDevices();
 
     this.mUiButton = parent.querySelector<any>(".callapp_button");
     this.mUiRemoteVideoParent = parent.querySelector<HTMLParagraphElement>(
@@ -288,9 +282,6 @@ export class CallApp {
     this.mUiAudio.onclick = this.Ui_OnUpdate;
     this.mUiVideo.onclick = this.Ui_OnUpdate;
     this.mUiButton.onclick = this.Ui_OnStartStopButtonClicked;
-    this.mUiVideoDevices.addEventListener("change", () => {
-      this.UI_OnVideoDeviceUpdate();
-    });
 
     this.UI_ParameterToUi();
     this.UI_UiToValues();
@@ -315,8 +306,6 @@ export class CallApp {
         this.mUiRemoteVideoParent.firstChild
       );
     }
-
-    this.UI_UpdateVideoDevices();
   }
 
   private Ui_OnRemoteVideo(video: HTMLVideoElement, id: awrtc.ConnectionId) {
@@ -346,46 +335,6 @@ export class CallApp {
 
     this.mAutostart = this.GetParameterByName("autostart");
     this.mAutostart = this.tobool(this.mAutostart, false);
-  }
-
-  public UI_UpdateVideoDevices() {
-    DeviceApi.UpdateAsync().then(() => {
-      const selectedIndex = this.mUiVideoDevices.selectedIndex;
-      while (this.mUiVideoDevices.options.length > 0)
-        this.mUiVideoDevices.options[0].remove();
-
-      const devices = Media.SharedInstance.GetVideoDevices();
-
-      devices.forEach((x) => {
-        const opt = document.createElement("option");
-        opt.text = x;
-        opt.value = x;
-        this.mUiVideoDevices.add(opt);
-      });
-      if (
-        selectedIndex !== -1 &&
-        selectedIndex < this.mUiVideoDevices.options.length
-      ) {
-        this.mUiVideoDevices.selectedIndex = selectedIndex;
-      } else {
-        this.mUiVideoDevices.selectedIndex = 0;
-      }
-    });
-  }
-  public UI_GetVideoDevice(): string {
-    const index = this.mUiVideoDevices.selectedIndex;
-    if (index === -1 || index >= this.mUiVideoDevices.options.length)
-      return null;
-    const name = this.mUiVideoDevices.options[index].value;
-    return name;
-  }
-  private UI_OnVideoDeviceUpdate() {
-    const device = this.UI_GetVideoDevice();
-    if (this.mIsRunning) {
-      const newConfig = this.mMediaConfig.clone();
-      newConfig.VideoDeviceName = this.UI_GetVideoDevice();
-      this.Reconfigure(newConfig);
-    }
   }
 
   //UI to values
