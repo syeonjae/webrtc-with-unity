@@ -1,49 +1,5 @@
-/*
-Copyright (c) 2022, because-why-not.com Limited
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-
-* Neither the name of the copyright holder nor the names of its
-  contributors may be used to endorse or promote products derived from
-  this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
 import * as awrtc from "./awrtc/index";
-import { DeviceApi, Media, MediaConfig, WebRtcHelper } from "./awrtc/index";
-
-/**
- * Main (and most complicated) example for using BrowserWebRtcCall.
- * Have a look at examples.html for easier scenarios.
- *
- *
- *
- * Features:
- * - Build a "Join" system on top of the regular Listen / Call model to make it easier to use.
- * - basic user interface (This is for easy testing not for use as a final application!!! Write your own using the API)
- * - setup to be compatible with the Unity Asset's CallApp (but without TURN server!)
- * - Get parameters from the address line to configure the call
- * - autostart the call (this might not work in all browsers. Mostly used for testing)
- */
+import { Media, MediaConfig, WebRtcHelper } from "./awrtc/index";
 export class CallApp {
   private mAddress;
   private mNetConfig = new awrtc.NetworkConfig();
@@ -166,15 +122,10 @@ export class CallApp {
   }
 
   private OnNetworkEvent(sender: any, args: awrtc.CallEventArgs): void {
-    //User gave access to requested camera/ microphone
     if (args.Type == awrtc.CallEventType.ConfigurationComplete) {
       console.log("configuration complete");
 
       if (this.mWaitForInitialConfig) {
-        //Try to listen to the address
-        //Conference mode = everyone listening will connect to each other
-        //Call mode -> If the address is free it will wait for someone else to connect
-        //          -> If the address is used then it will fail to listen and then try to connect via Call(address);
         console.log(`Attempt to listen on ${this.mAddress}`);
         this.mCall.Listen(this.mAddress);
       }
@@ -188,11 +139,7 @@ export class CallApp {
         this.Ui_OnRemoteVideo(videoElement, margs.ConnectionId);
       }
     } else if (args.Type == awrtc.CallEventType.ListeningFailed) {
-      //First attempt of this example is to try to listen on a certain address
-      //for conference calls this should always work (expect the internet is dead)
       if (this.mNetConfig.IsConference == false) {
-        //no conference call and listening failed? someone might have claimed the address.
-        //Try to connect to existing call
         console.log(`Attempt to call ${this.mAddress}`);
         this.mCall.Call(this.mAddress);
       } else {
@@ -204,8 +151,6 @@ export class CallApp {
         return;
       }
     } else if (args.Type == awrtc.CallEventType.ConnectionFailed) {
-      //Outgoing call failed entirely. This can mean there is no address to connect to,
-      //server is offline, internet is dead, firewall blocked access, ...
       const errorMsg = "Connection failed. Offline? Server dead? ";
       console.error(errorMsg);
       this.Ui_OnError(errorMsg);
@@ -213,19 +158,16 @@ export class CallApp {
       this.CheckAutoRejoin();
       return;
     } else if (args.Type == awrtc.CallEventType.CallEnded) {
-      //call ended or was disconnected
       const callEndedEvent = args as awrtc.CallEndedEventArgs;
       console.log("call ended with id " + callEndedEvent.ConnectionId.id);
       delete this.mRemoteVideo[callEndedEvent.ConnectionId.id];
       this.Ui_OnLog(
         "Disconnected from user with id " + callEndedEvent.ConnectionId.id
       );
-      //check if this was the last user
       if (
         this.mNetConfig.IsConference == false &&
         Object.keys(this.mRemoteVideo).length == 0
       ) {
-        //1 to 1 call and only user left -> quit
         this.Cleanup();
         this.CheckAutoRejoin();
         return;
@@ -239,10 +181,8 @@ export class CallApp {
       console.warn(
         `Message from ${messageArgs.ConnectionId.id} via ${type} dc received: ${messageArgs.Content} `
       );
-      //this.mCall.Send(messageArgs.Content, messageArgs.Reliable, messageArgs.ConnectionId);
     } else if (args.Type == awrtc.CallEventType.DataMessage) {
       const messageArgs = args as awrtc.DataMessageEventArgs;
-      //this.mCall.SendData(messageArgs.Content, messageArgs.Reliable, messageArgs.ConnectionId);
     } else if (args.Type == awrtc.CallEventType.CallAccepted) {
       const arg = args as awrtc.CallAcceptedEventArgs;
       console.log("New call accepted id: " + arg.ConnectionId.id);
@@ -253,11 +193,8 @@ export class CallApp {
     }
   }
 
-  //UI calls. should be moved out into its own class later
   private mMediaConfig: MediaConfig;
   private mAutostart;
-  private mUiAudio: HTMLInputElement;
-  private mUiVideo: HTMLInputElement;
   private mUiButton: HTMLButtonElement;
   private mUiRemoteVideoParent: HTMLElement;
 
@@ -267,25 +204,14 @@ export class CallApp {
     const devname = "Screen capture";
     Media.SharedInstance.EnableScreenCapture(devname);
     this.mMediaConfig.VideoDeviceName = devname;
-
-    this.mUiAudio = parent.querySelector<HTMLInputElement>(
-      ".callapp_send_audio"
-    );
-    this.mUiVideo = parent.querySelector<HTMLInputElement>(
-      ".callapp_send_video"
-    );
-
     this.mUiButton = parent.querySelector<any>(".callapp_button");
     this.mUiRemoteVideoParent = parent.querySelector<HTMLParagraphElement>(
       ".callapp_remote_video"
     );
-    this.mUiAudio.onclick = this.Ui_OnUpdate;
-    this.mUiVideo.onclick = this.Ui_OnUpdate;
     this.mUiButton.onclick = this.Ui_OnStartStopButtonClicked;
 
     this.UI_ParameterToUi();
     this.UI_UiToValues();
-    this.Ui_ValuesToUi();
 
     if (this.mAutostart) {
       console.log("Starting automatically ... ");
@@ -311,7 +237,6 @@ export class CallApp {
   private Ui_OnRemoteVideo(video: HTMLVideoElement, id: awrtc.ConnectionId) {
     if (id.id in this.mRemoteVideo) {
       const old_video = this.mRemoteVideo[id.id];
-      //this.mUiRemoteVideoParent.removeChild(old_video);
       delete this.mRemoteVideo[id.id];
     }
     this.mRemoteVideo[id.id] = video;
@@ -330,14 +255,10 @@ export class CallApp {
   };
 
   private UI_ParameterToUi() {
-    this.mUiAudio.checked = this.tobool(this.GetParameterByName("audio"), true);
-    this.mUiVideo.checked = this.tobool(this.GetParameterByName("video"), true);
-
     this.mAutostart = this.GetParameterByName("autostart");
     this.mAutostart = this.tobool(this.mAutostart, false);
   }
 
-  //UI to values
   public Ui_OnUpdate = () => {
     console.debug("OnUiUpdate");
     this.UI_UiToValues();
@@ -346,16 +267,9 @@ export class CallApp {
   private UI_UiToValues() {
     const newConfig = this.mMediaConfig.clone();
 
-    newConfig.Audio = this.mUiAudio.checked;
-    newConfig.Video = this.mUiVideo.checked;
-
+    newConfig.Audio = false;
+    newConfig.Video = false;
     this.Reconfigure(newConfig);
-  }
-  //Values to UI
-  public Ui_ValuesToUi(): void {
-    console.log("UpdateUi");
-    this.mUiAudio.checked = this.mMediaConfig.Audio;
-    this.mUiVideo.checked = this.mMediaConfig.Video;
   }
 }
 
