@@ -262,7 +262,6 @@ export class CallApp {
   //UI calls. should be moved out into its own class later
   private mMediaConfig: MediaConfig;
   private mAutostart;
-  private mUiAddress: HTMLInputElement;
   private mUiAudio: HTMLInputElement;
   private mUiVideo: HTMLInputElement;
   private mUiVideoDevices: HTMLSelectElement;
@@ -277,8 +276,6 @@ export class CallApp {
     Media.SharedInstance.EnableScreenCapture(devname);
     this.mMediaConfig.VideoDeviceName = devname;
 
-    this.mUiAddress =
-      parent.querySelector<HTMLInputElement>(".callapp_address");
     this.mUiAudio = parent.querySelector<HTMLInputElement>(
       ".callapp_send_audio"
     );
@@ -369,7 +366,6 @@ export class CallApp {
     this.mUiAudio.checked = this.tobool(this.GetParameterByName("audio"), true);
     this.mUiVideo.checked = this.tobool(this.GetParameterByName("video"), true);
 
-    this.mUiAddress.value = this.GetParameterByName("a");
     this.mAutostart = this.GetParameterByName("autostart");
     this.mAutostart = this.tobool(this.mAutostart, false);
   }
