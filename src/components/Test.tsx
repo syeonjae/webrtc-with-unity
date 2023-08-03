@@ -15,9 +15,8 @@ const Test = () => {
     <div>
       {parse(`
             <div id="callapp1" class="grid-container">
-            <div class="header">
                 <h1>Callapp1:</h1>
-                URL to connect:
+                URL to connect: 
                 <p class="callapp_url">
 
                 </p>
@@ -26,13 +25,7 @@ const Test = () => {
                 <select name="video_devices" class="video_devices" >
                 </select>
                 <input type= "text" class="callapp_address" autocomplete="off">
-                <div class="resolution">
-                    width: <input type="text" class="callapp_width" size="4" value="1280">  </input>
-                    
-                    height:<input type="text" class="callapp_height" size="4" value="720"> </input>
-                </div>
                 <button class="callapp_button"> Join </button>
-            </div>
             <div class="main">
                 <div class="callapp_remote_video"></div>
             </div>

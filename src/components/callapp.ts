@@ -67,6 +67,7 @@ export class CallApp {
     ];
     this.mNetConfig.IsConference = false;
     this.mNetConfig.SignalingUrl = "wss://s.y-not.app/callapp";
+    this.mAddress = "dev";
     //uncommenting this will make the callapp incompatible to the default configuration!
     //(new connection will immediately disconnect again after being established)
     //this.mNetConfig.KeepSignalingAlive = true;
@@ -188,24 +189,9 @@ export class CallApp {
       const margs = args as awrtc.MediaUpdatedEventArgs;
       if (margs.ConnectionId == awrtc.ConnectionId.INVALID) {
         var videoElement = margs.VideoElement;
-
-        this.Ui_OnLocalVideo(videoElement);
-        console.log(
-          "local video added resolution:" +
-            videoElement.videoWidth +
-            videoElement.videoHeight +
-            " fps: ??"
-        );
       } else {
         var videoElement = margs.VideoElement;
         this.Ui_OnRemoteVideo(videoElement, margs.ConnectionId);
-        console.log(
-          "remote video added resolution:" +
-            videoElement.videoWidth +
-            "x" +
-            videoElement.videoHeight +
-            " fps: ??"
-        );
       }
     } else if (args.Type == awrtc.CallEventType.ListeningFailed) {
       //First attempt of this example is to try to listen on a certain address
@@ -280,11 +266,8 @@ export class CallApp {
   private mUiAudio: HTMLInputElement;
   private mUiVideo: HTMLInputElement;
   private mUiVideoDevices: HTMLSelectElement;
-  private mUiWidth: HTMLInputElement;
-  private mUiHeight: HTMLInputElement;
   private mUiButton: HTMLButtonElement;
   private mUiUrl: HTMLElement;
-  private mUiLocalVideoParent: HTMLElement;
   private mUiRemoteVideoParent: HTMLElement;
 
   public setupUi(parent: HTMLElement) {
@@ -302,23 +285,17 @@ export class CallApp {
     this.mUiVideo = parent.querySelector<HTMLInputElement>(
       ".callapp_send_video"
     );
-    this.mUiWidth = parent.querySelector<HTMLInputElement>(".callapp_width");
-    this.mUiHeight = parent.querySelector<HTMLInputElement>(".callapp_height");
     this.mUiVideoDevices =
       parent.querySelector<HTMLSelectElement>(".video_devices");
     this.UI_UpdateVideoDevices();
 
     this.mUiUrl = parent.querySelector<HTMLParagraphElement>(".callapp_url");
     this.mUiButton = parent.querySelector<any>(".callapp_button");
-    this.mUiLocalVideoParent = parent.querySelector<HTMLParagraphElement>(
-      ".callapp_local_video"
-    );
     this.mUiRemoteVideoParent = parent.querySelector<HTMLParagraphElement>(
       ".callapp_remote_video"
     );
     this.mUiAudio.onclick = this.Ui_OnUpdate;
     this.mUiVideo.onclick = this.Ui_OnUpdate;
-    this.mUiAddress.onkeyup = this.Ui_OnUpdate;
     this.mUiButton.onclick = this.Ui_OnStartStopButtonClicked;
     this.mUiVideoDevices.addEventListener("change", () => {
       this.UI_OnVideoDeviceUpdate();
@@ -356,9 +333,6 @@ export class CallApp {
   }
   private Ui_OnCleanup() {
     this.mUiButton.textContent = "Join";
-    while (this.mUiLocalVideoParent.hasChildNodes()) {
-      this.mUiLocalVideoParent.removeChild(this.mUiLocalVideoParent.firstChild);
-    }
     while (this.mUiRemoteVideoParent.hasChildNodes()) {
       this.mUiRemoteVideoParent.removeChild(
         this.mUiRemoteVideoParent.firstChild
@@ -369,13 +343,6 @@ export class CallApp {
   }
   private Ui_OnLog(msg: string) {}
   private Ui_OnError(msg: string) {}
-  private Ui_OnLocalVideo(video_element: HTMLVideoElement) {
-    if (video_element !== null) {
-      video_element.setAttribute("width", "100%");
-      video_element.setAttribute("height", "100%");
-      this.mUiLocalVideoParent.appendChild(video_element);
-    }
-  }
 
   private Ui_OnRemoteVideo(video: HTMLVideoElement, id: awrtc.ConnectionId) {
     if (id.id in this.mRemoteVideo) {
@@ -401,14 +368,8 @@ export class CallApp {
   private UI_ParameterToUi() {
     this.mUiAudio.checked = this.tobool(this.GetParameterByName("audio"), true);
     this.mUiVideo.checked = this.tobool(this.GetParameterByName("video"), true);
-    const width = this.GetParameterByName("width");
-    if (width) this.mUiWidth.value = width;
-
-    const height = this.GetParameterByName("height");
-    if (height) this.mUiHeight.value = height;
 
     this.mUiAddress.value = this.GetParameterByName("a");
-
     this.mAutostart = this.GetParameterByName("autostart");
     this.mAutostart = this.tobool(this.mAutostart, false);
   }
@@ -467,15 +428,10 @@ export class CallApp {
     return -1;
   }
   private UI_UiToValues() {
-    this.mAddress = this.mUiAddress.value;
-
     const newConfig = this.mMediaConfig.clone();
 
     newConfig.Audio = this.mUiAudio.checked;
     newConfig.Video = this.mUiVideo.checked;
-
-    newConfig.IdealWidth = this.UI_ParseRes(this.mUiWidth);
-    newConfig.IdealHeight = this.UI_ParseRes(this.mUiHeight);
 
     this.Reconfigure(newConfig);
 
@@ -484,16 +440,8 @@ export class CallApp {
   //Values to UI
   public Ui_ValuesToUi(): void {
     console.log("UpdateUi");
-    this.mUiAddress.value = this.mAddress;
     this.mUiAudio.checked = this.mMediaConfig.Audio;
     this.mUiVideo.checked = this.mMediaConfig.Video;
-    this.mUiWidth.value = "";
-    if (this.mMediaConfig.IdealWidth > 0)
-      this.mUiWidth.value = "" + this.mMediaConfig.IdealWidth;
-
-    this.mUiHeight.value = "";
-    if (this.mMediaConfig.IdealHeight > 0)
-      this.mUiHeight.value = "" + this.mMediaConfig.IdealHeight;
 
     this.mUiUrl.innerHTML = this.ValuesToParameter();
   }
