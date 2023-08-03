@@ -1,0 +1,30 @@
+.main {
+  grid-area: ma;
+}
+
+.callapp_remote_video {
+  width: 360px;
+  height: 240px;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-areas:
+    "hd hd hd hd"
+    "ma ma ma ma"
+    "ma ma ma ma"
+    "ma ma ma ma";
+  gap: 5px;
+  color: #d5d5d5;
+  padding: 10px;
+}
+
+.grid-container > div {
+  padding: 20px 0;
+  font-size: 20px;
+}
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
