@@ -68,10 +68,6 @@ export class CallApp {
     this.mNetConfig.IsConference = false;
     this.mNetConfig.SignalingUrl = "wss://s.y-not.app/callapp";
     this.mAddress = "dev";
-    //uncommenting this will make the callapp incompatible to the default configuration!
-    //(new connection will immediately disconnect again after being established)
-    //this.mNetConfig.KeepSignalingAlive = true;
-    //this.mNetConfig.MaxIceRestart = 2;
   }
 
   private GetParameterByName(name) {
@@ -266,7 +262,6 @@ export class CallApp {
   private mUiVideo: HTMLInputElement;
   private mUiVideoDevices: HTMLSelectElement;
   private mUiButton: HTMLButtonElement;
-  private mUiUrl: HTMLElement;
   private mUiRemoteVideoParent: HTMLElement;
 
   public setupUi(parent: HTMLElement) {
@@ -286,7 +281,6 @@ export class CallApp {
       parent.querySelector<HTMLSelectElement>(".video_devices");
     this.UI_UpdateVideoDevices();
 
-    this.mUiUrl = parent.querySelector<HTMLParagraphElement>(".callapp_url");
     this.mUiButton = parent.querySelector<any>(".callapp_button");
     this.mUiRemoteVideoParent = parent.querySelector<HTMLParagraphElement>(
       ".callapp_remote_video"
@@ -413,14 +407,6 @@ export class CallApp {
     console.log("UpdateUi");
     this.mUiAudio.checked = this.mMediaConfig.Audio;
     this.mUiVideo.checked = this.mMediaConfig.Video;
-  }
-
-  private GenerateRandomKey() {
-    let result = "";
-    for (let i = 0; i < 7; i++) {
-      result += String.fromCharCode(65 + Math.round(Math.random() * 25));
-    }
-    return result;
   }
 }
 

@@ -16,10 +16,6 @@ const Test = () => {
       {parse(`
             <div id="callapp1" class="grid-container">
                 <h1>Callapp1:</h1>
-                URL to connect: 
-                <p class="callapp_url">
-
-                </p>
                 <input type="checkbox" name="audio" class="callapp_send_audio" checked autocomplete="off"> Audio
                 <input type="checkbox" name="video" class="callapp_send_video" checked autocomplete="off"> Video
                 <select name="video_devices" class="video_devices" >
