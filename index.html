@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React + TS</title>
+    <style>
+      .header {
+        grid-area: hd;
+        background-color: rgba(9, 7, 7, 1);
+      }
+      .main {
+        grid-area: ma;
+        background-color: rgba(9, 7, 7, 1);
+        height: 100vh;
+      }
+      .local {
+        grid-area: ma;
+
+        width: 20%;
+        height: 20%;
+        align-self: end; /* bottom of column */
+        justify-self: end; /* right of row */
+        margin: 1em;
+        /* background-color: rgba(9, 7, 7, 0);*/
+        background-color: rgba(255, 0, 0, 0);
+      }
+      .callapp_local_video {
+        width: 100%;
+        height: 100%;
+      }
+      .callapp_local_video > video {
+        transform: scaleX(-1);
+      }
+
+      .callapp_remote_video {
+        width: 360px;
+        height: 240px;
+      }
+
+      .grid-container {
+        display: grid;
+        grid-template-areas:
+          "hd hd hd hd"
+          "ma ma ma ma"
+          "ma ma ma ma"
+          "ma ma ma ma";
+        gap: 5px;
+        background-color: #2d373f;
+        color: #d5d5d5;
+        padding: 10px;
+      }
+
+      .grid-container > div {
+        padding: 20px 0;
+        font-size: 20px;
+      }
+      video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

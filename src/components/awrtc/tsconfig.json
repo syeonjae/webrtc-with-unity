@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig_base",
+  "compilerOptions": {
+   "declaration": true,
+    "target": "es5",
+	"lib" : ["ES2016", "dom"],
+    "module": "es2015",
+    "outDir": "../../build/awrtc"
+  }
+
+}
